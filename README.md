@@ -1,4 +1,6 @@
 # khata
+**ﺧَﻄَﺄ - ḵaṭā**
+
 *Khata is a simple and easy-to-use error management library for Go. It helps you write cleaner and more readable code by providing a more expressive way to handle errors. With Khata, you can easily add context to your errors, wrap them with additional information, and even customize the error messages.* 
 
 *But that's not all. Khata also helps you with debugging by adding a lot more capabilities to the default errors. You can extract the stack trace, print the error in a more readable format, and even log the error to a file or a remote service. All of this makes it easier to diagnose and fix issues in your code.*
