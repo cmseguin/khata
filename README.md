@@ -177,8 +177,6 @@ You might find that your errors are too verbose, and that the package and file p
 - `KHATA_FUNC_TRUNC_PREFIX` (default: `""`): If set, the package name will be truncated by removing the prefix from the beginning.
 - `KHATA_FUNC_TRUNC_PREFIX` (default: `""`): If set, the file paths will be truncated by removing the prefix from the beginning of the path.
 
-```go
-
 ## Contributing
 
 Contributions are welcome! Feel free to open an issue or a pull request.
