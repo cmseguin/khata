@@ -1,5 +1,5 @@
 # khata
-**ﺧَﻄَﺄ - ḵaṭā**
+<bold dir="ltr">ﺧَﻄَﺄ - ḵaṭā</bold>
 
 *Khata is a simple and easy-to-use error management library for Go. It helps you write cleaner and more readable code by providing a more expressive way to handle errors. With Khata, you can easily add context to your errors, wrap them with additional information, and even customize the error messages.* 
 
