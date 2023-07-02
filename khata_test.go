@@ -219,12 +219,12 @@ func TestKhataErrorFromTemplate(t *testing.T) {
 		return
 	}
 
-	if k.IsTemplate(&template2) {
+	if k.IsTemplate(template2) {
 		t.Error("IsTemplate() did not return true for the incorrect template")
 		return
 	}
 
-	if !k.IsTemplate(&template) {
+	if !k.IsTemplate(template) {
 		t.Error("IsTemplate() did not return false for the correct template")
 		return
 	}
