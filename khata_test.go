@@ -2,6 +2,7 @@ package khata_test
 
 import (
 	"errors"
+	"os"
 	"testing"
 
 	"github.com/cmseguin/khata"
@@ -25,7 +26,7 @@ func TestWrapKhata(t *testing.T) {
 	}
 }
 
-func subFnExplain(err khata.Khata) khata.Khata {
+func subFnExplain(err *khata.Khata) *khata.Khata {
 	err.Explain("This is an explanation for subFnExplain")
 	return err
 }
@@ -227,4 +228,55 @@ func TestKhataErrorFromTemplate(t *testing.T) {
 		t.Error("IsTemplate() did not return false for the correct template")
 		return
 	}
+}
+
+func TestKhataErrorChaining(t *testing.T) {
+	k := khata.
+		New("This is an error message").
+		Explain("This is an explanation").
+		SetCode(404).
+		SetExitCode(2).
+		SetType("MyType")
+
+	if k.Error() != "This is an error message" {
+		t.Error("Error() did not set the error message")
+		return
+	}
+
+	if k.ExitCode() != 2 {
+		t.Error("Error() did not set the exit code")
+		return
+	}
+
+	if k.Code() != 404 {
+		t.Error("Error() did not set the code")
+		return
+	}
+
+	if k.Type() != "MyType" {
+		t.Error("Error() did not set the type")
+		return
+	}
+
+	if k.Explanations()[0].Message() != "This is an explanation" {
+		t.Error("Explain() did not set the explanation message")
+		return
+	}
+}
+
+func TestDebugOutput(t *testing.T) {
+	os.Setenv("KHATA_FUNC_TRUNC_PREFIX", "github.com/cmseguin/")
+	os.Setenv("KHATA_PATH_TRUNC_PREFIX", "/Users/cmseguin/dev/git/khata/")
+
+	k := khata.
+		New("Not Found").
+		Explain("This is an explanation of not found").
+		Explain("This is an other explanation of not found").
+		SetCode(404).
+		SetExitCode(1).
+		SetType("HTTP").
+		SetProperty("test", "testValue").
+		SetProperty("test2", "testValue2")
+
+	k.Debug()
 }

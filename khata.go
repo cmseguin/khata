@@ -67,13 +67,13 @@ type KhataTemplate struct {
 }
 
 // Create a new khata error with the template
-func (kt *KhataTemplate) New(message string) Khata {
+func (kt *KhataTemplate) New(message string) *Khata {
 	return kt.Wrap(errors.New(message))
 }
 
 // Wraps an error with a Khata object while using the template
-func (kt *KhataTemplate) Wrap(err error) Khata {
-	return Khata{
+func (kt *KhataTemplate) Wrap(err error) *Khata {
+	return &Khata{
 		Err:              err,
 		createdAt:        time.Now().UTC(),
 		errorCode:        kt.errorCode,
@@ -87,8 +87,8 @@ func (kt *KhataTemplate) Wrap(err error) Khata {
 }
 
 // Allows to extend or copy the template
-func (kt *KhataTemplate) Extend() KhataTemplate {
-	return KhataTemplate{
+func (kt *KhataTemplate) Extend() *KhataTemplate {
+	return &KhataTemplate{
 		errorCode:  kt.errorCode,
 		errorType:  kt.errorType,
 		exitCode:   kt.exitCode,
@@ -431,11 +431,6 @@ func (k *Khata) Debug() *Khata {
 		fmt.Println(p)
 	}
 
-	if len(k.properties) == 0 {
-		fmt.Println()
-		return k
-	}
-
 	println(fmt.Sprintf("\n=== %sDetails%s", colors.BoldYellow, colors.Reset))
 
 	println(fmt.Sprintf("  %sError Type%s: %s%s%s", colors.BoldWhite, colors.Reset, colors.Cyan, k.errorType, colors.Reset))
@@ -444,6 +439,11 @@ func (k *Khata) Debug() *Khata {
 	println(fmt.Sprintf("  %sError At%s: %s%s%s", colors.BoldWhite, colors.Reset, colors.Cyan, k.createdAt.Format("2006/01/02 15:04:05 0.000ms"), colors.Reset))
 	println(fmt.Sprintf("  %sHandled At%s: %s%s%s", colors.BoldWhite, colors.Reset, colors.Cyan, handledAt.Format("2006/01/02 15:04:05 0.000ms"), colors.Reset))
 	println(fmt.Sprintf("  %sEnlapse Time%s: %s%.3fs%s", colors.BoldWhite, colors.Reset, colors.Cyan, (float64(diff.Milliseconds()) / 1000), colors.Reset))
+
+	if len(k.properties) == 0 {
+		fmt.Println()
+		return k
+	}
 
 	println(fmt.Sprintf("\n=== %sProperties%s", colors.BoldYellow, colors.Reset))
 
@@ -483,7 +483,7 @@ func (k *Khata) Debug() *Khata {
 // Returns a JSON string representation of the error.
 // This is useful to log or store the error.
 // The handledAt and trace will be generated at the time of calling this method.
-func (k *Khata) ToJson() string {
+func (k *Khata) ToJSON() string {
 	trace := k.Trace()
 	explanations := k.Explanations()
 
@@ -527,8 +527,8 @@ func (k *Khata) ToJson() string {
 }
 
 // Create the default khata error type
-func Wrap(err error) Khata {
-	return Khata{
+func Wrap(err error) *Khata {
+	return &Khata{
 		Err:              err,
 		createdAt:        time.Now().UTC(),
 		errorCode:        DEFAULT_ERROR_CODE,
@@ -540,21 +540,21 @@ func Wrap(err error) Khata {
 	}
 }
 
-func New(message string) Khata {
+func New(message string) *Khata {
 	return Wrap(errors.New(message))
 }
 
 // KhataTemplate
 
 // Create a new KhataTemplate with the given error type as an optional argument. Expects a string.
-func NewTemplate(args ...interface{}) KhataTemplate {
+func NewTemplate(args ...interface{}) *KhataTemplate {
 	errorType := DEFAULT_ERROR_TYPE
 
 	if len(args) > 0 {
 		errorType = args[0].(string)
 	}
 
-	return KhataTemplate{
+	return &KhataTemplate{
 		errorCode:  DEFAULT_ERROR_CODE,
 		errorType:  errorType,
 		exitCode:   DEFAULT_EXIT_CODE,
