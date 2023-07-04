@@ -179,7 +179,7 @@ NotFoundServerError.New()
 
 To set context on a template, multiple methods are available. You can use most of them directly on the template object. The following methods are available:
 
-- `SetMessage(message string) *KhataTemplate`: Sets the message of the error.
+- `SetMessage(message string) *KhataTemplate`: Sets the default message of the template. Defaults to "error".
 - `SetCode(code int) *KhataTemplate`: Sets the error code.
 - `SetExitCode(code int) *KhataTemplate`: Sets the exit code.
 - `SetType(type string) *KhataTemplate`: Sets the type of the error.
@@ -190,7 +190,7 @@ To set context on a template, multiple methods are available. You can use most o
 
 To access the context on a template, multiple methods are available. You can use most of them directly on the template object. The following methods are available:
 
-- `Message() string`: Returns the message of the template.
+- `Message() string`: Returns the default message of the template. Defaults to "error".
 - `Code() int`: Returns the error code of the template.
 - `ExitCode() int`: Returns the exit code of the template.
 - `Type() string`: Returns the type of the template.
