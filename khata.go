@@ -15,6 +15,7 @@ import (
 const (
 	DEFAULT_EXIT_CODE  = 1
 	DEFAULT_ERROR_CODE = -1
+	DEFAULT_MESSAGE    = "error"
 	DEFAULT_ERROR_TYPE = "KhataError"
 )
 
@@ -60,15 +61,21 @@ func (ke *KhataExplanation) FunctionName() string {
 }
 
 type KhataTemplate struct {
+	message    string
 	errorCode  int
 	errorType  string
 	exitCode   int
 	properties map[string]interface{}
 }
 
-// Create a new khata error with the template
-func (kt *KhataTemplate) New(message string) *Khata {
+// Create a new khata error with the template and given message
+func (kt *KhataTemplate) NewWithMessage(message string) *Khata {
 	return kt.Wrap(errors.New(message))
+}
+
+// Create a new khata error with the template
+func (kt *KhataTemplate) New() *Khata {
+	return kt.Wrap(errors.New(kt.message))
 }
 
 // Wraps an error with a Khata object while using the template
@@ -93,7 +100,19 @@ func (kt *KhataTemplate) Extend() *KhataTemplate {
 		errorType:  kt.errorType,
 		exitCode:   kt.exitCode,
 		properties: kt.properties,
+		message:    kt.message,
 	}
+}
+
+// Returns the message associated with the template
+func (kt *KhataTemplate) Message() string {
+	return kt.message
+}
+
+// Sets the message associated with the template
+func (kt *KhataTemplate) SetMessage(message string) *KhataTemplate {
+	kt.message = message
+	return kt
 }
 
 // Returns the error code associated with the template
@@ -547,18 +566,13 @@ func New(message string) *Khata {
 // KhataTemplate
 
 // Create a new KhataTemplate with the given error type as an optional argument. Expects a string.
-func NewTemplate(args ...interface{}) *KhataTemplate {
-	errorType := DEFAULT_ERROR_TYPE
-
-	if len(args) > 0 {
-		errorType = args[0].(string)
-	}
-
+func NewTemplate() *KhataTemplate {
 	return &KhataTemplate{
 		errorCode:  DEFAULT_ERROR_CODE,
-		errorType:  errorType,
+		errorType:  DEFAULT_ERROR_TYPE,
 		exitCode:   DEFAULT_EXIT_CODE,
 		properties: map[string]interface{}{},
+		message:    DEFAULT_MESSAGE,
 	}
 }
 

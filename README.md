@@ -149,28 +149,51 @@ jsonStr := khata.ToJSON()
 
 ### Using templates
 
-Khata also provides a way to create error templates. Those can be very powerful when you need to create multiple errors with the same context. To create a template, you can use the `khata.NewTemplate` function. It takes a message as an argument and returns a reference to a template object. The message can be any string value, but it's recommended to use a constant or a variable so that you can easily change it later if needed.
+Khata also provides a way to create error templates. Those can be very powerful when you need to create multiple errors with the same context. To create a template, you can use the `khata.NewTemplate` function. It returns a reference to the newly created template object. From the template object, you can use the following methods to generate errors:
+
+- `New() *Khata`: Generates a new khata error from the template.
+- `NewWithMessage(message string) *Khata`: Generates a new khata error from the template with given message.
+- `Wrap(err error) *Khata`: Wraps an error with the template.
 
 ```go
-httpError := khata.NewTemplate("something went wrong").
-    SetCode(500).
-    SetExitCode(1).
+httpError := khata.NewTemplate().
+    SetMessage("something went wrong")
+    SetExitCode(-1).
     SetType("HTTP")
 
-InternalServerError := httpErrorTemplate.Extend().SetCode(500)
+InternalServerError := httpErrorTemplate.Extend().
+    SetCode(500).
+    SetMessage("internal server error")
+
 // ...
-NotFoundServerError := httpErrorTemplate.Extend().SetCode(404)
+NotFoundServerError := httpErrorTemplate.Extend().
+    SetCode(404).
+    SetMessage("not found")
+// ...
+NotFoundServerError.New()
 ```
 
 ### Setting context on the template
 
 To set context on a template, multiple methods are available. You can use most of them directly on the template object. The following methods are available:
 
+- `SetMessage(message string)`: Sets the message of the error.
 - `SetCode(code int)`: Sets the error code.
 - `SetExitCode(code int)`: Sets the exit code.
 - `SetType(type string)`: Sets the type of the error.
 - `SetProperty(key string, value interface{})`: Sets a custom property on the error object.
 - `RemoveProperty(key string)`: Removes a custom property from the error object.
+
+### Accessing the context on the template
+
+To access the context on a template, multiple methods are available. You can use most of them directly on the template object. The following methods are available:
+
+- `Message() string`: Returns the message of the template.
+- `Code() int`: Returns the error code of the template.
+- `ExitCode() int`: Returns the exit code of the template.
+- `Type() string`: Returns the type of the template.
+- `HasProperty(key string) bool`: Returns whether the template has a custom property with the given key.
+- `GetProperty(key string) interface{}`: Returns the value of the custom property with the given key.
 
 ### Truncating the package or the file paths
 

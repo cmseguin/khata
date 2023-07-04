@@ -73,7 +73,7 @@ func TestKhataExplainf(t *testing.T) {
 }
 
 func TestKhataTemplate(t *testing.T) {
-	template := khata.NewTemplate("MyNewTemplate")
+	template := khata.NewTemplate().SetType("MyNewTemplate")
 
 	if template.Type() != "MyNewTemplate" {
 		t.Error("NewTemplate() did not set the template name")
@@ -176,8 +176,8 @@ func TestKhataTemplate(t *testing.T) {
 }
 
 func TestKhataErrorFromTemplate(t *testing.T) {
-	template := khata.NewTemplate("MyNewTemplate")
-	template2 := khata.NewTemplate(template.Type())
+	template := khata.NewTemplate().SetType("MyNewTemplate")
+	template2 := khata.NewTemplate().SetType(template.Type())
 
 	template.SetCode(404)
 	template.SetExitCode(2)
@@ -187,10 +187,10 @@ func TestKhataErrorFromTemplate(t *testing.T) {
 
 	template.RemoveProperty("test2")
 
-	k := template.New("This is an error message")
+	k := template.New()
 
-	if k.Error() != "This is an error message" {
-		t.Error("Error() did not set the error message")
+	if k.Error() != "error" {
+		t.Error("Error() did not set the default error message")
 		return
 	}
 
