@@ -30,7 +30,9 @@ err := khata.New("something went wrong")
 To wrap an error, you can use the `khata.Wrap` function. It takes an error object as arguments and returns a reference to a new khata error object.
 
 ```go
-err := khata.Wrap(err, "something went wrong")
+err := errors.New("something went wrong")
+// ...
+k := khata.Wrap(err)
 ```
 
 ### Adding context to an error
@@ -65,10 +67,11 @@ To read the context of an error, multiple methods are also available. You can us
 - `ExitCode() int`: Returns the exit code.
 - `Error() string`: Returns the wrapped error's message.
 - `Type() string`: Returns the type of the error.
+- `PropertiesKeys() []string`: Returns the keys of the custom properties.
 - `GetProperty(key string) interface{}`: Returns the value of a custom property.
 - `HasProperty(key string) bool`: Returns whether a custom property exists.
-- `Explanations() []string`: Returns the explanations of the error.
-- `Trace() string`: Returns the stack trace of the error.
+- `Explanations() []KhataExplanation`: Returns the explanations of the error.
+- `Trace() []KhataTrace`: Returns the stack trace of the error.
 
 ```go
 code := khata.Code(err)
@@ -146,7 +149,6 @@ To generate a json representation of the error, you can use the `khata.ToJSON` f
 jsonStr := khata.ToJSON()
 ```
 
-
 ### Using templates
 
 Khata also provides a way to create error templates. Those can be very powerful when you need to create multiple errors with the same context. To create a template, you can use the `khata.NewTemplate` function. It returns a reference to the newly created template object. From the template object, you can use the following methods to generate errors:
@@ -177,12 +179,12 @@ NotFoundServerError.New()
 
 To set context on a template, multiple methods are available. You can use most of them directly on the template object. The following methods are available:
 
-- `SetMessage(message string)`: Sets the message of the error.
-- `SetCode(code int)`: Sets the error code.
-- `SetExitCode(code int)`: Sets the exit code.
-- `SetType(type string)`: Sets the type of the error.
-- `SetProperty(key string, value interface{})`: Sets a custom property on the error object.
-- `RemoveProperty(key string)`: Removes a custom property from the error object.
+- `SetMessage(message string) *KhataTemplate`: Sets the message of the error.
+- `SetCode(code int) *KhataTemplate`: Sets the error code.
+- `SetExitCode(code int) *KhataTemplate`: Sets the exit code.
+- `SetType(type string) *KhataTemplate`: Sets the type of the error.
+- `SetProperty(key string, value interface{}) *KhataTemplate`: Sets a custom property on the error object.
+- `RemoveProperty(key string) *KhataTemplate`: Removes a custom property from the error object.
 
 ### Accessing the context on the template
 
@@ -192,8 +194,30 @@ To access the context on a template, multiple methods are available. You can use
 - `Code() int`: Returns the error code of the template.
 - `ExitCode() int`: Returns the exit code of the template.
 - `Type() string`: Returns the type of the template.
+- `PropertiesKeys() []string`: Returns the keys of the custom properties of the template.
 - `HasProperty(key string) bool`: Returns whether the template has a custom property with the given key.
 - `GetProperty(key string) interface{}`: Returns the value of the custom property with the given key.
+
+### Modifying an existing khata error with a template
+
+You can also modify an existing khata error with a template. To do so, you can use the `FillWithTemplate` or `OverwriteWithTemplate` method on the khata error. The `FillWithTemplate` method will only fill the properties & fields that were not altered on the error, while the `OverwriteWithTemplate` method will overwrite all the properties & fields of the error with the ones from the template.
+
+```go
+
+HttpInternalError := khata.NewTemplate().
+    SetCode(500).
+    SetMessage("something went wrong")
+    SetExitCode(-1).
+    SetType("HTTP")
+
+someUnknownKhataError = khata.New("random error")
+
+// ...
+
+someUnknownKhataError.FillWithTemplate(HttpInternalError)
+// OR
+someUnknownKhataError.OverwriteWithTemplate(HttpInternalError)
+```
 
 ### Truncating the package or the file paths
 

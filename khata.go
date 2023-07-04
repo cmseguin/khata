@@ -90,6 +90,12 @@ func (kt *KhataTemplate) Wrap(err error) *Khata {
 		properties:       kt.properties,
 		traceStack:       []KhataTrace{},
 		template:         kt,
+		_dirtyFields: map[string]bool{
+			"errorCode": true,
+			"errorType": true,
+			"exitCode":  true,
+			"template":  true,
+		},
 	}
 }
 
@@ -154,6 +160,15 @@ func (kt *KhataTemplate) SetProperty(key string, value interface{}) *KhataTempla
 	return kt
 }
 
+// Returns the keys of all the properties set on the error
+func (kt *KhataTemplate) PropertiesKeys() []string {
+	keys := make([]string, len(kt.properties))
+	for key := range kt.properties {
+		keys = append(keys, key)
+	}
+	return keys
+}
+
 // Returns the value of a property associated with the template
 func (kt *KhataTemplate) GetProperty(key string) interface{} {
 	return kt.properties[key]
@@ -195,6 +210,7 @@ type Khata struct {
 	traceStack       []KhataTrace
 	explanationStack []KhataExplanation
 	template         *KhataTemplate
+	_dirtyFields     map[string]bool
 }
 
 // Expose the error so it behaves like a normal error
@@ -242,6 +258,7 @@ func (k *Khata) Code() int {
 // Set the error code. If not set, defaults to -1
 func (k *Khata) SetCode(code int) *Khata {
 	k.errorCode = code
+	k._dirtyFields["errorCode"] = true
 	return k
 }
 
@@ -268,6 +285,7 @@ func (k *Khata) Type() string {
 // Allows you to change the type of the error
 func (k *Khata) SetType(errorType string) *Khata {
 	k.errorType = errorType
+	k._dirtyFields["errorType"] = true
 	return k
 }
 
@@ -284,6 +302,15 @@ func (k *Khata) IsAnyType(errorTypes ...string) bool {
 		}
 	}
 	return false
+}
+
+// Returns the keys of all the properties set on the error
+func (k *Khata) PropertiesKeys() []string {
+	keys := make([]string, len(k.properties))
+	for key := range k.properties {
+		keys = append(keys, key)
+	}
+	return keys
 }
 
 // Returns the value for a given property key. If the property is not set, returns nil
@@ -316,6 +343,7 @@ func (k *Khata) ExitCode() int {
 // Set the exit code of the program. If not set, defaults to 1
 func (k *Khata) SetExitCode(code int) *Khata {
 	k.exitCode = code
+	k._dirtyFields["exitCode"] = true
 	return k
 }
 
@@ -385,6 +413,64 @@ func (k *Khata) IsAnyTemplate(kts ...*KhataTemplate) bool {
 // Check if the error is fatal. Fatal errors are those that should stop the program.
 func (k *Khata) IsFatal() bool {
 	return k.exitCode != -1
+}
+
+// Try to assign all the pristine fields of the khata error to the given template
+// If there was no change, the the reference to the old template stored in the khata will remain the same
+func (k *Khata) FillWithTemplate(t *KhataTemplate) *Khata {
+	changed := false
+
+	if !k._dirtyFields["errorCode"] && t.Code() != k.Code() {
+		k.errorCode = t.Code()
+		k._dirtyFields["errorCode"] = true
+		changed = true
+	}
+
+	if !k._dirtyFields["errorType"] && t.Type() != k.Type() {
+		k.errorType = t.Type()
+		k._dirtyFields["errorType"] = true
+		changed = true
+	}
+
+	if !k._dirtyFields["exitCode"] && t.ExitCode() != k.ExitCode() {
+		k.exitCode = t.ExitCode()
+		k._dirtyFields["exitCode"] = true
+		changed = true
+	}
+
+	for key, value := range t.properties {
+		if !k.HasProperty(key) {
+			k.properties[key] = value
+			changed = true
+		}
+	}
+
+	if changed {
+		k.template = t
+		k._dirtyFields["template"] = true
+	}
+
+	return k
+}
+
+// Overwrite the khata error field with the given template
+func (k *Khata) OverwriteWithTemplate(t *KhataTemplate) *Khata {
+	k.errorCode = t.Code()
+	k.errorType = t.Type()
+	k.exitCode = t.ExitCode()
+
+	for key, value := range t.properties {
+		k.properties[key] = value
+	}
+
+	k.template = t
+	k._dirtyFields = map[string]bool{
+		"errorCode": true,
+		"errorType": true,
+		"exitCode":  true,
+		"template":  true,
+	}
+	return k
 }
 
 // Print the error in a console friendly way
@@ -556,6 +642,15 @@ func Wrap(err error) *Khata {
 		explanationStack: []KhataExplanation{},
 		properties:       map[string]interface{}{},
 		traceStack:       []KhataTrace{},
+		template:         nil,
+		// These fields are used to track changes to the error object
+		// to be able to use a template after the error creation.
+		_dirtyFields: map[string]bool{
+			"errorCode": false,
+			"errorType": false,
+			"exitCode":  false,
+			"template":  false,
+		},
 	}
 }
 
