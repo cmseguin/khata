@@ -41,7 +41,7 @@ To add context to an error, multiple methods are available. You can use most of 
 
 - `SetCode(code int)`: Sets the error code.
 - `SetExitCode(code int)`: Sets the exit code.
-- `SetError(err error)`: Sets the error wraped in the khata object.
+- `SetError(err error)`: Sets the error wraped in the khata object. (Should be used with caution)
 - `SetType(type string)`: Sets the type of the error.
 - `SetProperty(key string, value interface{})`: Sets a custom property on the error object.
 - `RemoveProperty(key string)`: Removes a custom property from the error object.
@@ -52,9 +52,8 @@ Those methods can be chained together as they all return a reference to the erro
 
 ```go
 err := khata.New("something went wrong").
-    SetCode(500).
+    SetCode(7003).
     SetExitCode(1).
-    SetError(err).
     SetType("internal").
     SetProperty("foo", "bar")
 ```
