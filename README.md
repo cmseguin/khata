@@ -88,8 +88,8 @@ The khata error object also provides some utility methods. The following methods
 - `IsAnyCode(codes ...int) bool`: Returns whether the error has the same code as one of the codes passed as arguments.
 - `IsExitCode(code int) bool`: Returns whether the error has the same exit code as the one passed as an argument.
 - `IsAnyExitCode(codes ...int) bool`: Returns whether the error has the same exit code as one of the codes passed as arguments.
-- `IsTemplate(template *Template) bool`: Returns whether the error has the same template as the one passed as an argument.
-- `IsAnyTemplate(templates ...*Template) bool`: Returns whether the error has the same template as one of the templates passed as arguments.
+- `IsInstanceOf(template *Template) bool`: Returns whether the error is a direct child of the template passed as an argument.
+- `IsRelatedTo(template *Template) bool`: Returns whether the error is related to the template passed as an argument. An error is related to a template if it is a direct or inderect child of the template.
 - `IsFatal() bool`: Returns whether the error is fatal. Fatal errors are errors that have an exit code other than -1.
 
 ```go
@@ -197,12 +197,19 @@ To access the context on a template, multiple methods are available. You can use
 - `HasProperty(key string) bool`: Returns whether the template has a custom property with the given key.
 - `GetProperty(key string) interface{}`: Returns the value of the custom property with the given key.
 
+### Utility methods on the template
+
+To make it easier to work with templates, the following utility methods are available:
+
+- `IsParentOf(template *KhataTemplate) bool`: Returns whether the template is a direct parent of the given template.
+- `IsInstanceOf(template *KhataTemplate) bool`: Returns whether the template is a direct child of the given template.
+- `IsRelatedTo(template *KhataTemplate) bool`: Returns whether the template is related to the given template. A template is related to another template if it is a direct or indirect child of the given template.
+
 ### Modifying an existing khata error with a template
 
-You can also modify an existing khata error with a template. To do so, you can use the `FillWithTemplate` or `OverwriteWithTemplate` method on the khata error. The `FillWithTemplate` method will only fill the properties & fields that were not altered on the error, while the `OverwriteWithTemplate` method will overwrite all the properties & fields of the error with the ones from the template.
+You can also modify an existing khata error with a template. To do so, you can use the `Apply` method on the template object. This method will modify the khata error with the template context.
 
 ```go
-
 HttpInternalError := khata.NewTemplate().
     SetCode(500).
     SetMessage("something went wrong")
@@ -212,10 +219,7 @@ HttpInternalError := khata.NewTemplate().
 someUnknownKhataError = khata.New("random error")
 
 // ...
-
-someUnknownKhataError.FillWithTemplate(HttpInternalError)
-// OR
-someUnknownKhataError.OverwriteWithTemplate(HttpInternalError)
+HttpInternalError.Apply(someUnknownKhataError)
 ```
 
 ### Truncating the package or the file paths

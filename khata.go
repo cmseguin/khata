@@ -66,6 +66,7 @@ type KhataTemplate struct {
 	errorType  string
 	exitCode   int
 	properties map[string]interface{}
+	parent     *KhataTemplate
 }
 
 // Create a new khata error with the template and given message
@@ -90,13 +91,21 @@ func (kt *KhataTemplate) Wrap(err error) *Khata {
 		properties:       kt.properties,
 		traceStack:       []KhataTrace{},
 		template:         kt,
-		_dirtyFields: map[string]bool{
-			"errorCode": true,
-			"errorType": true,
-			"exitCode":  true,
-			"template":  true,
-		},
 	}
+}
+
+func (kt *KhataTemplate) Apply(k *Khata) *Khata {
+	k.errorCode = kt.Code()
+	k.errorType = kt.Type()
+	k.exitCode = kt.ExitCode()
+
+	for key, value := range kt.properties {
+		k.properties[key] = value
+	}
+
+	k.template = kt
+
+	return k
 }
 
 // Allows to extend or copy the template
@@ -107,6 +116,7 @@ func (kt *KhataTemplate) Extend() *KhataTemplate {
 		exitCode:   kt.exitCode,
 		properties: kt.properties,
 		message:    kt.message,
+		parent:     kt,
 	}
 }
 
@@ -185,19 +195,28 @@ func (kt *KhataTemplate) HasProperty(key string) bool {
 	return kt.properties[key] != nil
 }
 
-// Check if the given error is matching the template
-func (kt *KhataTemplate) IsParent(khata *Khata) bool {
-	return khata.template == kt
+// Returns true if the template's parent is the same as the given template
+func (t *KhataTemplate) IsInstanceOf(kt *KhataTemplate) bool {
+	return t.parent == kt
 }
 
-// Check if any of the given error is matching the template
-func (kt *KhataTemplate) IsAnyParent(ks ...*Khata) bool {
-	for _, k := range ks {
-		if kt.IsParent(k) {
+// Returns true if the template is the same as the given's template parent
+func (t *KhataTemplate) IsParentOf(kt *KhataTemplate) bool {
+	return kt.parent == t
+}
+
+// Returns true if the templates's parent or any of its parents is the same as the given template
+func (t *KhataTemplate) IsRelatedTo(kt *KhataTemplate) bool {
+	templateToCheck := t.parent
+	for {
+		if templateToCheck == nil {
+			return false
+		}
+		if templateToCheck == kt {
 			return true
 		}
+		templateToCheck = templateToCheck.parent
 	}
-	return false
 }
 
 type Khata struct {
@@ -210,7 +229,6 @@ type Khata struct {
 	traceStack       []KhataTrace
 	explanationStack []KhataExplanation
 	template         *KhataTemplate
-	_dirtyFields     map[string]bool
 }
 
 // Expose the error so it behaves like a normal error
@@ -242,6 +260,25 @@ func (k *Khata) IsAny(errs ...error) bool {
 	return false
 }
 
+// Returns true if the error's template is the same as the given template
+func (k *Khata) IsInstanceOf(kt *KhataTemplate) bool {
+	return k.template == kt
+}
+
+// Returns true if the error's template or any of its parents is the same as the given template
+func (k *Khata) IsRelatedTo(kt *KhataTemplate) bool {
+	templateToCheck := k.template
+	for {
+		if templateToCheck == nil {
+			return false
+		}
+		if templateToCheck == kt {
+			return true
+		}
+		templateToCheck = templateToCheck.parent
+	}
+}
+
 // Returns the trace stack as an array of objects. Will be computed at the time of calling.
 func (k *Khata) Trace() []KhataTrace {
 	trace := collectTrace()
@@ -258,7 +295,6 @@ func (k *Khata) Code() int {
 // Set the error code. If not set, defaults to -1
 func (k *Khata) SetCode(code int) *Khata {
 	k.errorCode = code
-	k._dirtyFields["errorCode"] = true
 	return k
 }
 
@@ -285,7 +321,6 @@ func (k *Khata) Type() string {
 // Allows you to change the type of the error
 func (k *Khata) SetType(errorType string) *Khata {
 	k.errorType = errorType
-	k._dirtyFields["errorType"] = true
 	return k
 }
 
@@ -343,7 +378,6 @@ func (k *Khata) ExitCode() int {
 // Set the exit code of the program. If not set, defaults to 1
 func (k *Khata) SetExitCode(code int) *Khata {
 	k.exitCode = code
-	k._dirtyFields["exitCode"] = true
 	return k
 }
 
@@ -367,7 +401,7 @@ func (k *Khata) Explanations() []KhataExplanation {
 	return k.explanationStack
 }
 
-// Fatal will print the error and exit the program
+// Add an explanation to the error
 func (k *Khata) Explain(explanation string) *Khata {
 	lastTrace := collectCallerTrace()
 
@@ -395,82 +429,9 @@ func (k *Khata) Explainf(format string, args ...interface{}) *Khata {
 	return k
 }
 
-// Check if the error is the same as the given template
-func (k *Khata) IsTemplate(kt *KhataTemplate) bool {
-	return k.template == kt
-}
-
-// Check if the error is any of the given templates
-func (k *Khata) IsAnyTemplate(kts ...*KhataTemplate) bool {
-	for _, kt := range kts {
-		if k.IsTemplate(kt) {
-			return true
-		}
-	}
-	return false
-}
-
 // Check if the error is fatal. Fatal errors are those that should stop the program.
 func (k *Khata) IsFatal() bool {
 	return k.exitCode != -1
-}
-
-// Try to assign all the pristine fields of the khata error to the given template
-// If there was no change, the the reference to the old template stored in the khata will remain the same
-func (k *Khata) FillWithTemplate(t *KhataTemplate) *Khata {
-	changed := false
-
-	if !k._dirtyFields["errorCode"] && t.Code() != k.Code() {
-		k.errorCode = t.Code()
-		k._dirtyFields["errorCode"] = true
-		changed = true
-	}
-
-	if !k._dirtyFields["errorType"] && t.Type() != k.Type() {
-		k.errorType = t.Type()
-		k._dirtyFields["errorType"] = true
-		changed = true
-	}
-
-	if !k._dirtyFields["exitCode"] && t.ExitCode() != k.ExitCode() {
-		k.exitCode = t.ExitCode()
-		k._dirtyFields["exitCode"] = true
-		changed = true
-	}
-
-	for key, value := range t.properties {
-		if !k.HasProperty(key) {
-			k.properties[key] = value
-			changed = true
-		}
-	}
-
-	if changed {
-		k.template = t
-		k._dirtyFields["template"] = true
-	}
-
-	return k
-}
-
-// Overwrite the khata error field with the given template
-func (k *Khata) OverwriteWithTemplate(t *KhataTemplate) *Khata {
-	k.errorCode = t.Code()
-	k.errorType = t.Type()
-	k.exitCode = t.ExitCode()
-
-	for key, value := range t.properties {
-		k.properties[key] = value
-	}
-
-	k.template = t
-	k._dirtyFields = map[string]bool{
-		"errorCode": true,
-		"errorType": true,
-		"exitCode":  true,
-		"template":  true,
-	}
-	return k
 }
 
 // Print the error in a console friendly way
@@ -643,14 +604,6 @@ func Wrap(err error) *Khata {
 		properties:       map[string]interface{}{},
 		traceStack:       []KhataTrace{},
 		template:         nil,
-		// These fields are used to track changes to the error object
-		// to be able to use a template after the error creation.
-		_dirtyFields: map[string]bool{
-			"errorCode": false,
-			"errorType": false,
-			"exitCode":  false,
-			"template":  false,
-		},
 	}
 }
 
