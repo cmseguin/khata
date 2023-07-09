@@ -75,8 +75,21 @@ func (kt *KhataTemplate) NewWithMessage(message string) *Khata {
 }
 
 // Create a new khata error with the template
-func (kt *KhataTemplate) New() *Khata {
-	return kt.Wrap(errors.New(kt.message))
+func (kt *KhataTemplate) New(message ...string) *Khata {
+	var inputMessage string
+
+	for i, m := range message {
+		inputMessage += m
+		if i < len(message)-1 {
+			inputMessage += "\n"
+		}
+	}
+
+	if inputMessage == "" {
+		inputMessage = kt.message
+	}
+
+	return kt.Wrap(errors.New(inputMessage))
 }
 
 // Wraps an error with a Khata object while using the template

@@ -226,8 +226,8 @@ HttpInternalError.Apply(someUnknownKhataError)
 
 You might find that your errors are too verbose, and that the package and file paths are too long. Often you don't really need to see the full path of your files when debugging. In that case, you can set the following environment variables to truncate the package and file paths:
 
-- `KHATA_FUNC_TRUNC_PREFIX` (default: `""`): If set, the package name will be truncated by removing the prefix from the beginning.
-- `KHATA_FUNC_TRUNC_PREFIX` (default: `""`): If set, the file paths will be truncated by removing the prefix from the beginning of the path.
+- `KHATA_FUNC_TRUNC_PREFIX` (default: `""`): If set, the package name will be truncated by removing the prefix from the beginning of the function name.
+- `KHATA_FILE_TRUNC_PREFIX` (default: `""`): If set, the file paths will be truncated by removing the prefix from the beginning of the path.
 
 ## Contributing
 
