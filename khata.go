@@ -69,11 +69,6 @@ type KhataTemplate struct {
 	parent     *KhataTemplate
 }
 
-// Create a new khata error with the template and given message
-func (kt *KhataTemplate) NewWithMessage(message string) *Khata {
-	return kt.Wrap(errors.New(message))
-}
-
 // Create a new khata error with the template
 func (kt *KhataTemplate) New(message ...string) *Khata {
 	var inputMessage string

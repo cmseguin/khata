@@ -152,8 +152,7 @@ jsonStr := khata.ToJSON()
 
 Khata also provides a way to create error templates. Those can be very powerful when you need to create multiple errors with the same context. To create a template, you can use the `khata.NewTemplate` function. It returns a reference to the newly created template object. From the template object, you can use the following methods to generate errors:
 
-- `New() *Khata`: Generates a new khata error from the template.
-- `NewWithMessage(message string) *Khata`: Generates a new khata error from the template with given message.
+- `New(message ...string) *Khata`: Generates a new khata error from the template.
 - `Wrap(err error) *Khata`: Wraps an error with the template.
 
 ```go
