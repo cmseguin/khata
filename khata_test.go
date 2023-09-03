@@ -40,12 +40,12 @@ func TestKhataExplain(t *testing.T) {
 		return
 	}
 
-	if k.Explanations()[0].FunctionName() != "github.com/cmseguin/khata_test.subFnExplain" {
+	if k.Explanations()[0].FunctionName != "github.com/cmseguin/khata_test.subFnExplain" {
 		t.Error("Explain() did not set the function name")
 		return
 	}
 
-	if k.Explanations()[0].Message() != "This is an explanation for subFnExplain" {
+	if k.Explanations()[0].Message != "This is an explanation for subFnExplain" {
 		t.Error("Explain() did not set the explanation message")
 		return
 	}
@@ -60,13 +60,13 @@ func TestKhataExplainf(t *testing.T) {
 		t.Error("Explainf() did not set the explanation")
 		return
 	}
-	println(k.Explanations()[0].FunctionName())
-	if k.Explanations()[0].FunctionName() != "github.com/cmseguin/khata_test.TestKhataExplainf" {
+	println(k.Explanations()[0].FunctionName)
+	if k.Explanations()[0].FunctionName != "github.com/cmseguin/khata_test.TestKhataExplainf" {
 		t.Error("Explainf() did not set the function name")
 		return
 	}
 
-	if k.Explanations()[0].Message() != "This is an explanation" {
+	if k.Explanations()[0].Message != "This is an explanation" {
 		t.Error("Explainf() did not set the explanation message")
 		return
 	}
@@ -258,7 +258,7 @@ func TestKhataErrorChaining(t *testing.T) {
 		return
 	}
 
-	if k.Explanations()[0].Message() != "This is an explanation" {
+	if k.Explanations()[0].Message != "This is an explanation" {
 		t.Error("Explain() did not set the explanation message")
 		return
 	}
