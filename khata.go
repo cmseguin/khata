@@ -38,26 +38,10 @@ func (kt *KhataTrace) FunctionName() string {
 }
 
 type KhataExplanation struct {
-	message      string
-	file         string
-	line         int
-	functionName string
-}
-
-func (ke *KhataExplanation) Message() string {
-	return ke.message
-}
-
-func (ke *KhataExplanation) File() string {
-	return ke.file
-}
-
-func (ke *KhataExplanation) Line() int {
-	return ke.line
-}
-
-func (ke *KhataExplanation) FunctionName() string {
-	return ke.functionName
+	Message      string `json:"message"`
+	File         string `json:"file"`
+	Line         int    `json:"line"`
+	FunctionName string `json:"functionName"`
 }
 
 type KhataTemplate struct {
@@ -414,10 +398,10 @@ func (k *Khata) Explain(explanation string) *Khata {
 	lastTrace := collectCallerTrace()
 
 	k.explanationStack = append(k.explanationStack, KhataExplanation{
-		message:      explanation,
-		file:         lastTrace.file,
-		line:         lastTrace.line,
-		functionName: lastTrace.functionName,
+		Message:      explanation,
+		File:         lastTrace.file,
+		Line:         lastTrace.line,
+		FunctionName: lastTrace.functionName,
 	})
 
 	return k
@@ -428,10 +412,10 @@ func (k *Khata) Explainf(format string, args ...interface{}) *Khata {
 	lastTrace := collectCallerTrace()
 
 	k.explanationStack = append(k.explanationStack, KhataExplanation{
-		message:      fmt.Sprintf(format, args...),
-		file:         lastTrace.file,
-		line:         lastTrace.line,
-		functionName: lastTrace.functionName,
+		Message:      fmt.Sprintf(format, args...),
+		File:         lastTrace.file,
+		Line:         lastTrace.line,
+		FunctionName: lastTrace.functionName,
 	})
 
 	return k
@@ -462,21 +446,21 @@ func (k *Khata) Debug() *Khata {
 	println(fmt.Sprintf("\n=== %sExplanations%s", colors.BoldYellow, colors.Reset))
 
 	for _, explanation := range explanations {
-		file := tryTrimmingPath(explanation.file)
-		funcName := tryTrimmingFunc(explanation.functionName)
+		file := tryTrimmingPath(explanation.File)
+		funcName := tryTrimmingFunc(explanation.FunctionName)
 		p := fmt.Sprintf(
 			"  %s%s%s:%s%d%s (%s%s%s)\n  └── %s%s%s",
 			colors.UnderlineGray,
 			file,
 			colors.Reset,
 			colors.Green,
-			explanation.line,
+			explanation.Line,
 			colors.Reset,
 			colors.Cyan,
 			funcName,
 			colors.Reset,
 			colors.BoldWhite,
-			explanation.message,
+			explanation.Message,
 			colors.Reset,
 		)
 		fmt.Println(p)
@@ -574,10 +558,10 @@ func (k *Khata) ToJSON() string {
 
 	for i, e := range explanations {
 		explanationsMap[i] = map[string]interface{}{
-			"file":         e.file,
-			"line":         e.line,
-			"functionName": e.functionName,
-			"message":      e.message,
+			"file":         e.File,
+			"line":         e.Line,
+			"functionName": e.FunctionName,
+			"message":      e.Message,
 		}
 	}
 
